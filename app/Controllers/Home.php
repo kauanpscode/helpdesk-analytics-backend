@@ -8,4 +8,11 @@ class Home extends BaseController
     {
         return view('welcome_message');
     }
+
+    public function test()
+    {
+        return $this->response->setJSON([
+            "msg" => "API funcionando"
+        ]);
+    }
 }
