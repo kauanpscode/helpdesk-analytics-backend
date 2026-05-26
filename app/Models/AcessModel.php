@@ -16,4 +16,12 @@ class AcessModel extends Model
     protected $updatedField  = 'updated_at';
 
     protected $returnType = 'array';
+
+    public function getByEmail($email)
+    {
+        $sql = "SELECT * FROM users
+                WHERE email = ?";
+
+        return $this->query($sql, [$email])->getResult();
+    }
 }

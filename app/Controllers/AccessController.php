@@ -12,6 +12,10 @@ class AccessController extends BaseController
      * Expects JSON: { email, password }
      * Returns JSON: { token, user }
      */
+
+    public function __construct() {
+        $this->model = new AcessModel();
+    }
     public function login()
     {
         $json = $this->request->getJSON(true);
@@ -27,8 +31,7 @@ class AccessController extends BaseController
         }
 
         // Find user by email
-        $AcessModel = new AcessModel();
-        $user = $AcessModel->where('email', $email)->first();
+        $user = $this->model->getByEmail($email);
 
         if (!$user) {
             return $this->response
@@ -94,17 +97,15 @@ class AccessController extends BaseController
                 ->setJSON(['message' => 'A senha deve ter no mínimo 6 caracteres.']);
         }
 
-        $AcessModel = new AcessModel();
-
         // Check if email already exists
-        if ($AcessModel->where('email', $email)->first()) {
+        if ($this->model->getByEmail($email)) {
             return $this->response
                 ->setStatusCode(409)
                 ->setJSON(['message' => 'Este e-mail já está cadastrado.']);
         }
 
         // Create user with hashed password
-        $userId = $AcessModel->insert([
+        $userId = $this->model->insert([
             'name'     => $name,
             'email'    => $email,
             'password' => password_hash($password, PASSWORD_BCRYPT),
