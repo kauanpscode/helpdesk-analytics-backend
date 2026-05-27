@@ -22,6 +22,6 @@ class AcessModel extends Model
         $sql = "SELECT * FROM users
                 WHERE email = ?";
 
-        return $this->query($sql, [$email])->getResult();
+        return $this->query($sql, [$email])->getRowArray();
     }
 }
