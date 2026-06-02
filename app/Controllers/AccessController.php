@@ -5,6 +5,8 @@ namespace App\Controllers;
 use App\Models\AcessModel;
 use Firebase\JWT\JWT;
 
+use Google\Client;
+
 class AccessController extends BaseController
 {
     /**
@@ -13,7 +15,8 @@ class AccessController extends BaseController
      * Returns JSON: { token, user }
      */
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->model = new AcessModel();
     }
     public function login()
@@ -151,6 +154,70 @@ class AccessController extends BaseController
                 'name'  => $user['name'],
                 'email' => $user['email'],
             ],
+        ]);
+    }
+
+    public function googleLogin()
+    {
+        $json = $this->request->getJson(true);
+
+        $googleToken = $json['token'] ?? null;
+
+        if (!$googleToken) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'message' => 'Token Google não informado.'
+            ]);
+        }
+
+        $client = new Client([
+            'client_id' => env('google.clientId')
+        ]);
+
+        $payload = $client->verifyIdToken($googleToken);
+
+        if (!$payload) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'message' => 'Token Google inválido.'
+            ]);
+        }
+
+        $email = $payload['email'];
+        $name = $payload['name'] ?? 'Usuário Google';
+
+        $user = $this->model->getByEmail($email);
+
+        if (!$user) {
+            $userId = $this->model->insert([
+                'name'     => $name,
+                'email'    => $email,
+                'password' => password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT),
+            ]);
+
+            $user = $this->model->find($userId);
+        }
+
+        $secret = env('jwt.secret');
+
+        $issuedAt = time();
+        $expiration = $issuedAt + (60 * 60 * 24);
+
+        $jwtPayload = [
+            'iat' => $issuedAt,
+            'exp' => $expiration,
+            'sub' => $user['id'],
+            'email' => $user['email'],
+            'name' => $user['name']
+        ];
+
+        $token = JWT::encode($jwtPayload, $secret, 'HS256');
+
+        return $this->response->setJSON([
+            'token' => $token,
+            'user' => [
+                'id' => $user['id'],
+                'name' => $user['name'],
+                'email' => $user['email'],
+            ]
         ]);
     }
 }
