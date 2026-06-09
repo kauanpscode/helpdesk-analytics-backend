@@ -10,7 +10,7 @@ class Cors implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
-        if ($request->getMethod() === 'options') {
+        if (strtolower($request->getMethod()) === 'options') {
             return service('response')
                 ->setHeader('Access-Control-Allow-Origin', '*')
                 ->setHeader(

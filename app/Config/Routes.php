@@ -2,13 +2,14 @@
 
 use CodeIgniter\Router\RouteCollection;
 
+/**
+ * @var RouteCollection $routes
+ */
+
 $routes->options('api/(:any)', function () {
     return response()->setStatusCode(200);
 });
 
-/**
- * @var RouteCollection $routes
- */
 $routes->get('/', 'Home::index');
 
 $routes->get('/api/test', 'Home::test');
@@ -17,5 +18,8 @@ $routes->post('/api/register', 'AccessController::register');
 $routes->post('/api/google-login', 'AccessController::googleLogin');
 
 $routes->group('api', ['filter' => 'jwt'], static function ($routes) {
-    $routes->get('me', 'AccessController::me');
+    $routes->get('profile', 'AccessController::profile');
+
+    $routes->post('upload', 'FileController::upload');
+    $routes->delete('file', 'FileController::delete');
 });

@@ -135,7 +135,7 @@ class AccessController extends BaseController
      * GET /api/me (Protected)
      * Returns the authenticated user's data
      */
-    public function me()
+    public function profile()
     {
         $userId = $this->request->getHeaderLine('X-User-Id');
 
